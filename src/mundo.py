@@ -1,7 +1,8 @@
 import random
 
 # --- CONFIGURACIÓN DE PUNTOS Y REGLAS ---
-PUNTOS_INICIALES = 1000
+# Reglas del profe: se arranca en 0 y el +1000 es al salir con el oro, no al agarrarlo.
+PUNTOS_INICIALES = 0
 COSTO_MOVIMIENTO = 1
 COSTO_FLECHA = 10
 RECOMPENSA_ORO = 1000
@@ -33,7 +34,7 @@ class Percepciones:
 
 
 class MundoWumpus:
-    def __init__(self, tamano=4, puntos_iniciales=PUNTOS_INICIALES, prob_pozo=0.2):
+    def __init__(self, tamano=4, puntos_iniciales=PUNTOS_INICIALES, prob_pozo=0.2, pozos=None, wumpus=None, oro=None):
         self.tamano = tamano
         self.puntuacion = puntos_iniciales
         self.terminado = False
@@ -50,19 +51,23 @@ class MundoWumpus:
         self.visitadas = {(1, 1)}
 
         # Generación del mundo (la casilla 1,1 siempre es segura)
-        self.pozos = set()
-        for x in range(1, self.tamano + 1):
-            for y in range(1, self.tamano + 1):
-                if (x, y) != (1, 1) and random.random() < prob_pozo:
-                    self.pozos.add((x, y))
+        # Si llegan pozos/wumpus/oro es un mapa fijo (escenarios), si no se arma al azar.
+        if pozos is not None:
+            self.pozos = set(pozos)
+        else:
+            self.pozos = set()
+            for x in range(1, self.tamano + 1):
+                for y in range(1, self.tamano + 1):
+                    if (x, y) != (1, 1) and random.random() < prob_pozo:
+                        self.pozos.add((x, y))
 
         # Posición del Wumpus
         todas_casillas = [(x, y) for x in range(1, self.tamano + 1) for y in range(1, self.tamano + 1) if (x, y) != (1, 1)]
-        self.wumpus = random.choice(todas_casillas)
+        self.wumpus = wumpus if wumpus is not None else random.choice(todas_casillas)
         self.wumpus_vivo = True
 
         # Posición del Oro
-        self.pos_oro = random.choice(todas_casillas)
+        self.pos_oro = oro if oro is not None else random.choice(todas_casillas)
 
         # Eventos efímeros
         self.ultimo_grito = False
@@ -88,7 +93,7 @@ class MundoWumpus:
         ady = self._obtener_adyacentes(self.x, self.y)
 
         brisa = any(pos in self.pozos for pos in ady)
-        hedor = any(pos == self.wumpus for pos in ady) or (self.x, self.y) == self.wumpus
+        hedor = self.wumpus in ady
         resplandor = self.hay_oro(self.x, self.y)
 
         p = Percepciones(
@@ -102,15 +107,6 @@ class MundoWumpus:
         self.ultimo_grito = False
         self.ultimo_golpe = False
         return p
-
-    def _verificar_puntos_agotados(self):
-        """Verifica si los puntos llegaron a 0 para finalizar el juego."""
-        if self.puntuacion <= 0:
-            self.puntuacion = 0
-            if not self.terminado:
-                self.terminado = True
-                self.victoria = False
-                self.causa_fin = "¡GAME OVER! Se te agotaron los puntos."
 
     def ejecutar_accion(self, accion, parametro=None):
         if self.terminado:
@@ -158,7 +154,6 @@ class MundoWumpus:
             self.puntuacion -= COSTO_MOVIMIENTO
             if self.hay_oro(self.x, self.y):
                 self.tiene_oro = True
-                self.puntuacion += RECOMPENSA_ORO
 
         elif accion == "disparar":
             if self.tiene_flecha:
@@ -182,9 +177,8 @@ class MundoWumpus:
                 self.terminado = True
                 if self.tiene_oro:
                     self.victoria = True
+                    self.puntuacion += RECOMPENSA_ORO
                     self.causa_fin = "¡VICTORIA! Escapaste de la cueva con el oro."
                 else:
                     self.victoria = False
                     self.causa_fin = "Escapaste de la cueva sin el oro."
-
-        self._verificar_puntos_agotados()

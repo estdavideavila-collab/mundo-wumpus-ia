@@ -1,6 +1,5 @@
 import os
 import sys
-import random
 
 # Añadimos la carpeta 'src' directamente a las rutas de ejecución
 raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -8,20 +7,19 @@ sys.path.append(os.path.join(raiz, "src"))
 
 from mundo import MundoWumpus
 
-def crear_escenario_sin_solucion(tamano=4):
-    casillas_validas = [(x, y) for x in range(1, tamano + 1) for y in range(1, tamano + 1) if (x, y) not in [(1, 1), (1, 2), (2, 1)]]
-    
-    pozos_forzados = {(1, 2), (2, 1)}
-    pozos_extra = {c for c in casillas_validas if random.random() < 0.15}
-    pozos_totales = pozos_forzados.union(pozos_extra)
-    
-    wumpus_pos = random.choice(casillas_validas)
-    oro_pos = random.choice(casillas_validas)
-    pozos_totales.discard(oro_pos)
-    
-    return MundoWumpus(
-        tamano=tamano,
-        wumpus=wumpus_pos,
-        pozos=pozos_totales,
-        oro=oro_pos
-    )
+# Mapa fijo para el video. Hay brisa en (2,1) y en (1,2), entonces (2,2) puede
+# ser pozo y no hay como demostrar que alguna casilla nueva es segura.
+# Camino físico sí hay (por 2,2), pero el agente no puede saberlo sin arriesgarse.
+#
+#   y=4  .  .  .  .
+#   y=3  P  O  W  .
+#   y=2  .  .  .  .
+#   y=1  A  .  P  .
+#       x=1 2  3  4
+POZOS = {(3, 1), (1, 3)}
+WUMPUS = (3, 3)
+ORO = (2, 3)
+
+
+def crear_escenario_sin_solucion():
+    return MundoWumpus(tamano=4, pozos=POZOS, wumpus=WUMPUS, oro=ORO)

@@ -54,9 +54,13 @@ class LogicaAgente:
             self.agente.recoger_oro()
             return "AGARRAR_ORO"
 
+            # Ojo: este return quedó dentro del if y nunca se ejecuta, hay que bajarlo un nivel.
             return "CONTINUAR"
 
     def elegir_siguiente_casilla(self):
+        # Ojo: solo mira los vecinos de donde está. Si no hay uno seguro se rinde,
+        # aunque queden casillas seguras sin visitar más atrás. En mapas al azar se
+        # queda pegado, falta devolverse por lo seguro (backtracking).
         posicion_actual = self.agente.posicion
         vecinos = self.obtener_vecinos(posicion_actual)
 
