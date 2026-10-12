@@ -1,6 +1,5 @@
 import os
 import sys
-from collections import deque
 
 # Añadimos la carpeta 'src' directamente a las rutas de ejecución
 raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -8,25 +7,18 @@ sys.path.append(os.path.join(raiz, "src"))
 
 from mundo import MundoWumpus
 
-def crear_escenario_victoria(tamano=4):
-    while True:
-        mundo = MundoWumpus(tamano=tamano)
-        
-        cola = deque([(1, 1)])
-        visitados = {(1, 1)}
-        camino_posible = False
-        
-        while cola:
-            cx, cy = cola.popleft()
-            if (cx, cy) == mundo.oro:
-                camino_posible = True
-                break
-                
-            for nx, ny in mundo.adyacentes(cx, cy):
-                if (nx, ny) not in visitados:
-                    if not mundo.hay_pozo(nx, ny) and (nx, ny) != mundo.wumpus:
-                        visitados.add((nx, ny))
-                        cola.append((nx, ny))
-                        
-        if camino_posible:
-            return mundo
+# Mapa fijo para el video. El agente siente brisa en (4,2) y hedor en (3,2),
+# igual encuentra camino seguro, toma el oro en (2,2) y vuelve a (1,1).
+#
+#   y=4  .  .  .  .
+#   y=3  P  .  W  P
+#   y=2  .  O  .  .
+#   y=1  A  .  .  .
+#       x=1 2  3  4
+POZOS = {(1, 3), (4, 3)}
+WUMPUS = (3, 3)
+ORO = (2, 2)
+
+
+def crear_escenario_victoria():
+    return MundoWumpus(tamano=4, pozos=POZOS, wumpus=WUMPUS, oro=ORO)

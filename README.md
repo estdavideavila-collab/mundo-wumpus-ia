@@ -13,6 +13,22 @@ Desarrollar un agente que interprete percepciones del entorno, evite peligros, e
 - Git
 - GitHub
 
+## Cómo ejecutar
+
+```
+pip install -r requirements.txt
+python src/main.py
+```
+
+## Generar el ejecutable
+
+```
+pip install pyinstaller
+construir_exe.bat
+```
+
+Queda en `dist/MundoWumpus.exe`.
+
 ## Integrantes
 
 - Integrante 1

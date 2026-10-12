@@ -10,6 +10,13 @@ from interfaz import Interfaz
 
 def main():
     print("Iniciando La Caverna del Wumpus...")
+    # En Windows con escala 125%/150% la ventana sale borrosa y no cabe en portátiles pequeños
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
     app = Interfaz()
     app.ejecutar()
 
